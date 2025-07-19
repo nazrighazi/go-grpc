@@ -1,0 +1,23 @@
+syntax = "proto3";
+package products;
+option go_package =  "proto/products/products_proto";
+
+
+service Products {
+  rpc GetAllProducts (GetAllProductsRequest) returns (GetAllProductsResponse) {}
+}
+
+message GetAllProductsRequest {
+}
+
+message Product {
+  string name = 1;
+  double price = 2;
+  string description = 3;
+}
+
+message GetAllProductsResponse {
+  string status = 1;
+  string message = 2;
+  repeated Product data = 3; 
+}
