@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"go_grpc/products/internal/config"
 	"go_grpc/products/internal/route"
 	"log"
@@ -30,7 +31,7 @@ func NewServer(req HttpServerDto) *httpServer {
 
 func (httpServer *httpServer) Start() {
 
-	listener, err := net.Listen("tcp", ":50051")
+	listener, err := net.Listen("tcp", fmt.Sprintf("%s:%d", httpServer.conf.Server.Host, httpServer.conf.Server.Port))
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
