@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	dataaccess "go_grpc/products/internal/data_access"
+	pb "go_grpc/proto/products"
 	"log/slog"
 )
 
@@ -17,7 +18,7 @@ type Service struct {
 }
 
 type IService interface {
-	GetAllProducts(ctx context.Context) ([]dataaccess.Product, error)
+	GetAllProducts(ctx context.Context) (*pb.GetAllProductsResponse, error)
 }
 
 func NewService(req ServiceDto) IService {
