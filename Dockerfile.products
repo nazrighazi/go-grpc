@@ -1,0 +1,64 @@
+# Dockerfile for the products service
+
+# Builder stage
+FROM golang:1.24.5-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache make protobuf protobuf-dev curl
+
+# Install protoc-gen-go and protoc-gen-go-grpc
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+ENV PATH="/root/go/bin:${PATH}"
+
+WORKDIR /app
+
+# Copy go modules and proto files
+COPY go.mod go.sum Makefile ./
+COPY proto/ ./proto/
+
+# Download dependencies
+RUN go mod download
+
+# Generate gRPC code
+RUN make gen-products
+
+# Download golang-migrate CLI
+RUN curl -L https://github.com/golang-migrate/migrate/releases/download/v4.17.0/migrate.linux-amd64.tar.gz | tar xvz
+RUN mv migrate /usr/local/bin/migrate
+RUN chmod +x /usr/local/bin/migrate
+
+# Copy the rest of the source code
+COPY . .
+
+# Build the products service
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/products-service ./products/cmd/grpc/main.go
+
+# Final stage
+FROM alpine:latest
+
+WORKDIR /app
+
+# Install postgres client for pg_isready, bash for entrypoint script, and jq for JSON parsing
+RUN apk add --no-cache postgresql-client bash jq
+
+# Copy the built binary and migrate CLI from the builder stage
+COPY --from=builder /app/products-service .
+COPY --from=builder /usr/local/bin/migrate /usr/local/bin/migrate
+
+# Copy the config file and migrations
+RUN mkdir -p /app/products
+COPY products/config.example.json ./products/config.json
+COPY products/internal/database/migrations/ ./products/migrations/
+
+# Copy entrypoint script
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
+
+# Expose the gRPC port
+EXPOSE 50051
+
+# Run the service using the entrypoint script
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["./products-service"]

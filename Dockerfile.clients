@@ -1,0 +1,49 @@
+# Dockerfile for the clients service
+
+# Builder stage
+FROM golang:1.24.5-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache make protobuf protobuf-dev
+
+# Install protoc-gen-go and protoc-gen-go-grpc
+RUN go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+RUN go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+ENV PATH="/root/go/bin:${PATH}"
+
+WORKDIR /app
+
+# Copy go modules and proto files
+COPY go.mod go.sum Makefile ./
+COPY proto/ ./proto/
+
+# Download dependencies
+RUN go mod download
+
+# Generate gRPC code
+RUN make gen-products
+
+# Copy the rest of the source code
+COPY . .
+
+# Build the clients service
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/clients-service ./clients/cmd/api/main.go
+
+# Final stage
+FROM alpine:latest
+
+WORKDIR /app
+
+# Copy the built binary from the builder stage
+COPY --from=builder /app/clients-service .
+
+# Copy the config file
+RUN mkdir -p /app/clients
+COPY clients/config.example.json ./clients/config.json
+
+# Expose the http port
+EXPOSE 8080
+
+# Run the service
+CMD ["./clients-service"]

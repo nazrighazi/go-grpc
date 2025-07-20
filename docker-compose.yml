@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: products
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d products"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  products:
+    build:
+      context: .
+      dockerfile: Dockerfile.products
+    ports:
+      - "50051:50051"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d products -h 127.0.0.1 -p 5432"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  clients:
+    build:
+      context: .
+      dockerfile: Dockerfile.clients
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
