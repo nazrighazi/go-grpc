@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"go_grpc/clients/internal/config"
 	"go_grpc/clients/internal/route"
-	"log"
+
 	"log/slog"
 
 	"github.com/labstack/echo/v4"
@@ -38,17 +38,19 @@ func (httpServer *httpServer) Start() {
 		return c.String(200, "OK")
 	})
 
-	// Connect to product service
-	productConn, err := grpc.NewClient(":50051",  grpc.WithTransportCredentials(insecure.NewCredentials()))
+
+	// Connect to grpc services
+	productConn, err := grpc.NewClient(fmt.Sprintf("%s:%d", httpServer.conf.ProductService.Host, httpServer.conf.ProductService.Port),  grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatalf("Failed to connect to product service: %v", err)
+		httpServer.log.Error("Failed to connect to product service", "error", err)
+		panic(err)
 	}
 	defer productConn.Close()
 
 
 	httpServer.InitializeHandlers(productConn)
 
-	serverUrl := fmt.Sprintf("%s:%d", httpServer.conf.Server.Host, httpServer.conf.Server.Port)
+	serverUrl := fmt.Sprintf(":%d", httpServer.conf.Server.Port)
 	httpServer.router.Logger.Fatal(httpServer.router.Start(serverUrl))
 }
 

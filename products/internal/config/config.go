@@ -36,9 +36,9 @@ type (
 	}
 
 	Config struct {
-		Server *ServerDetail `json:"server"`
-		Log    *LogConfig    `json:"log"`
-		Db     *DbConfig     `json:"db"`
+		Server              *ServerDetail `json:"server"`
+		Log                 *LogConfig    `json:"log"`
+		Db                  *DbConfig     `json:"db"`
 	}
 )
 

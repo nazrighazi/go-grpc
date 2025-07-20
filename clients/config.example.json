@@ -10,5 +10,9 @@
     "max_backup": 5,
     "max_age": 30,
     "compress": true
+  },
+  "productService": {
+    "host": "products",
+    "port": 50051
   }
 }

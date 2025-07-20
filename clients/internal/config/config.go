@@ -28,6 +28,12 @@ type (
 	Config struct {
 		Server *ServerDetail `json:"server"`
 		Log    *LogConfig    `json:"log"`
+		ProductService *ProductService `json:"product_service"`
+	}
+
+	ProductService struct {
+		Host string `mapstructure:"host"`
+		Port int    `mapstructure:"port"`
 	}
 )
 
