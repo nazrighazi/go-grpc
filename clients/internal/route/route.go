@@ -2,18 +2,18 @@ package route
 
 import (
 	"go_grpc/clients/internal/config"
+	grpc_conn "go_grpc/clients/internal/grpc"
 	"go_grpc/clients/internal/handlers"
 	"log/slog"
 
 	"github.com/labstack/echo/v4"
-	"google.golang.org/grpc"
 )
 
 type Route struct {
 	Router *echo.Echo
 	Conf   *config.Config
 	Log    *slog.Logger
-	GrpcServer *grpc.ClientConn
+	GrpcServer *grpc_conn.GrpcClients
 }
 
 func APIRoute(route *Route) {
@@ -23,5 +23,6 @@ func APIRoute(route *Route) {
 	handlers := handlers.NewHandlers(handlers.HandlersDto{Router: route.Router, Conf: route.Conf, Log: route.Log, GrpcServer: route.GrpcServer})
 
 	// Declare routes for handlers
-	handlers.ProductsHandler.RegisterRoutes(group)
+	handlers.ProductHandler.RegisterRoutes(group)
+	handlers.UserHandler.RegisterRoutes(group)
 }

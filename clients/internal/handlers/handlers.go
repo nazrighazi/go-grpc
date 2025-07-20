@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"go_grpc/clients/internal/config"
-	products_handler "go_grpc/clients/internal/handlers/products"
+	grpc_conn "go_grpc/clients/internal/grpc"
+	product_handler "go_grpc/clients/internal/handlers/product"
+	user_handler "go_grpc/clients/internal/handlers/user"
 	"log/slog"
 
 	"github.com/labstack/echo/v4"
-	"google.golang.org/grpc"
 )
 
 type (
@@ -15,17 +16,20 @@ type (
 		Router *echo.Echo
 		Conf   *config.Config
 		Log    *slog.Logger
-		GrpcServer *grpc.ClientConn
+		GrpcServer *grpc_conn.GrpcClients
 	}
 
 	Handlers struct {
-		ProductsHandler products_handler.IProductsHandler
+		ProductHandler product_handler.IProductHandler
+		UserHandler user_handler.IUserHandler
 	}
 
 )
 
 func NewHandlers(req HandlersDto) *Handlers {
 	return &Handlers{
-		ProductsHandler: products_handler.NewProductsHandler(products_handler.ProductsHandlerDto{Conf: req.Conf, Log: req.Log, GrpcServer: req.GrpcServer}),
+		ProductHandler: product_handler.NewProductHandler(product_handler.ProductHandlerDto{Conf: req.Conf, Log: req.Log, GrpcServer: req.GrpcServer}),
+		UserHandler: user_handler.NewUserHandler(user_handler.UserHandlerDto{Conf: req.Conf, Log: req.Log, GrpcServer: req.GrpcServer}),
+
 	}
 }

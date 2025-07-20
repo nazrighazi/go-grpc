@@ -25,16 +25,20 @@ type (
 		Compress  bool   `json:"compress"`
 	}
 
-	Config struct {
-		Server *ServerDetail `json:"server"`
-		Log    *LogConfig    `json:"log"`
-		ProductService *Service `json:"product_service"`
-		UserService *Service `json:"user_service"`
+	DbConfig struct {
+		Host     string `mapstructure:"host"`
+		Port     int    `mapstructure:"port"`
+		User     string `mapstructure:"user"`
+		Password string `mapstructure:"password"`
+		DBName   string `mapstructure:"dbname"`
+		SSLMode  string `mapstructure:"sslmode"`
+		TimeZone string `mapstructure:"timezone"`
 	}
 
-	Service struct {
-		Host string `mapstructure:"host"`
-		Port int    `mapstructure:"port"`
+	Config struct {
+		Server              *ServerDetail `json:"server"`
+		Log                 *LogConfig    `json:"log"`
+		Db                  *DbConfig     `json:"db"`
 	}
 )
 
@@ -48,7 +52,7 @@ func LoadConfig() (*Config, error) {
 	once.Do(func() {
 		viper.SetConfigName("config")
 		viper.SetConfigType("json")
-		viper.AddConfigPath("./clients")
+		viper.AddConfigPath("./users")
 		viper.AutomaticEnv()
 		viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 

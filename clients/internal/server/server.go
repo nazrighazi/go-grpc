@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"go_grpc/clients/internal/config"
+	grpc_conn "go_grpc/clients/internal/grpc"
 	"go_grpc/clients/internal/route"
 
 	"log/slog"
@@ -38,7 +39,6 @@ func (httpServer *httpServer) Start() {
 		return c.String(200, "OK")
 	})
 
-
 	// Connect to grpc services
 	productConn, err := grpc.NewClient(fmt.Sprintf("%s:%d", httpServer.conf.ProductService.Host, httpServer.conf.ProductService.Port),  grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -47,14 +47,19 @@ func (httpServer *httpServer) Start() {
 	}
 	defer productConn.Close()
 
+	grpcConn, err := grpc_conn.NewGrpcClients(httpServer.conf)
+	if err != nil {
+		httpServer.log.Error("Failed to connect to grpc clients", "error", err)
+		panic(err)
+	}
 
-	httpServer.InitializeHandlers(productConn)
+	httpServer.InitializeHandlers(grpcConn)
 
 	serverUrl := fmt.Sprintf(":%d", httpServer.conf.Server.Port)
 	httpServer.router.Logger.Fatal(httpServer.router.Start(serverUrl))
 }
 
-func (httpServer *httpServer) InitializeHandlers(grpc *grpc.ClientConn) {
+func (httpServer *httpServer) InitializeHandlers(grpc *grpc_conn.GrpcClients) {
 	route.APIRoute(&route.Route{
 		Router: httpServer.router,
 		Conf:   httpServer.conf,

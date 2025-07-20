@@ -1,0 +1,35 @@
+syntax = "proto3";
+package users;
+option go_package =  "proto/products/users_proto";
+
+
+service Users {
+  rpc LoginUser (LoginUserRequestDto) returns (LoginUserResponseDto) {}
+  rpc RegisterUser (RegisterUserRequestDto) returns (RegisterUserResponseDto) {}
+}
+
+message LoginUserRequestDto {
+    string email = 1;
+    string password = 2;
+}
+
+message LoginUserResult {
+    string access_token = 1;
+    string refresh_token = 2;
+}
+
+message LoginUserResponseDto {
+  string status = 1;
+  string message = 2;
+  repeated LoginUserResult data = 3; 
+}
+
+message RegisterUserRequestDto {
+    string email = 1;
+    string password = 2;
+}
+
+message RegisterUserResponseDto {
+    string status = 1;
+    string message = 2;
+}

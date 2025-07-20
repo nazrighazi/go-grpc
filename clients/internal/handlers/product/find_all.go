@@ -1,4 +1,4 @@
-package products_handler
+package product_handler
 
 import (
 	pb "go_grpc/proto/products"
@@ -7,16 +7,16 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func (handler *ProductsHandler) FindAll(c echo.Context) error {
+func (handler *ProductHandler) FindAll(c echo.Context) error {
 
-	products, err := handler.grpcServer.GetAllProducts(c.Request().Context(), &pb.GetAllProductsRequest{})
+	products, err := handler.grpcServer.Product.GetAllProducts(c.Request().Context(), &pb.GetAllProductsRequest{})
 	if err != nil {
 		handler.log.Error("Failed to get products from gRPC server", "error", err)
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+		return c.JSON(http.StatusInternalServerError, map[string]any{
 			"status":  "error",
 			"message": "failed to get products",
 			"data":    nil,
-			"error": map[string]interface{}{
+			"error": map[string]any{
 				"message": err.Error(),
 			},
 		})
@@ -24,7 +24,7 @@ func (handler *ProductsHandler) FindAll(c echo.Context) error {
 
 	handler.log.Debug("Received products from gRPC server", "products", products)
 
-	responseData := map[string]interface{}{
+	responseData := map[string]any{
 		"status":  products.Status,
 		"message": products.Message,
 		"data":    products.Data,
